@@ -109,7 +109,7 @@ function filtered_left_join(callable $filter, array $left, array $right, $leftId
     if (isset($tmpRight[$i]))
     {
       foreach ($tmpRight[$i] as &$r)
-        $result[] = array_merge($leftRow, array_filter($rightRow, $filter,  ARRAY_FILTER_USE_BOTH));
+        $result[] = array_merge($leftRow, array_filter($r, $filter,  ARRAY_FILTER_USE_BOTH));
     }
     else
       $result[] = $leftRow;
