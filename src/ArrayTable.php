@@ -11,8 +11,9 @@ namespace Jaypha;
 
 function extract_column($table, $idx): array
 {
+  assert(is_array($table) || $table instanceof \Traversable);
   $column = [];
-  foreach($table as &$row)
+  foreach($table as $row)
     if (isset($row[$idx]))
       $column[] = $row[$idx];
   return $column;
@@ -20,9 +21,9 @@ function extract_column($table, $idx): array
 
 //----------------------------------------------------------------------------
 
-function remove_column(&$table, $idx)
+function remove_column(array &$table, $idx)
 {
-  foreach($table as &$row)
+  foreach($table as $i => &$row)
     unset($row[$idx]);
 }
 
@@ -125,6 +126,8 @@ function filtered_left_join(callable $filter, array $left, array $right, $leftId
 
 function extractColumn(\Traversable $table, $idx): array
 {
+  return extract_column($table, $idx);
+/*
   $column = [];
   foreach($table as &$row)
   {
@@ -133,16 +136,21 @@ function extractColumn(\Traversable $table, $idx): array
       $column[] = $row[$idx];
   }
   return $column;
+  */
 }
 
 //----------------------------------------------------------------------------
 
 function removeColumn(\Traversable $table, $idx)
 {
-  foreach($table as &$row)
+  assert($table instanceof \ArrayAccess);
+  foreach($table as $i => $row)
   {
     if (is_array($row))
+    {
       unset($row[$idx]);
+      $table[$i] = $row;
+    }
     else
     {
       assert($row instanceof \ArrayAccess);
@@ -168,12 +176,12 @@ function leftJoin(\ArrayAccess $left, $right, $leftIdx, $rightIdx = null): \Arra
   $result = $r->newInstanceWithoutConstructor();
 
   $tmpRight = [];
-  foreach ($right as &$rightRow)
+  foreach ($right as $rightRow)
   {
     if (is_array($rightRow))
     {
       if (array_key_exists($rightIdx, $rightRow))
-        $tmpRight[$rightRow[$rightIdx]][] = &$rightRow;
+        $tmpRight[$rightRow[$rightIdx]][] = $rightRow;
     }
     else
     {
@@ -190,7 +198,7 @@ function leftJoin(\ArrayAccess $left, $right, $leftIdx, $rightIdx = null): \Arra
     $i = $leftRow[$leftIdx];
     if (isset($tmpRight[$i]))
     {
-      foreach ($tmpRight[$i] as &$r)
+      foreach ($tmpRight[$i] as $r)
       {
         $lr = is_object($leftRow) ? clone $leftRow : $leftRow;
         foreach ($r as $k => $v)
@@ -223,12 +231,12 @@ function innerJoin(\ArrayAccess $left, $right, $leftIdx, $rightIdx = null): \Arr
     if ($rightIdx === null) $rightIdx = $leftIdx;
 
     $tmpRight = [];
-    foreach ($right as &$rightRow)
+    foreach ($right as $rightRow)
     {
       if (is_array($rightRow))
       {
         if (array_key_exists($rightIdx, $rightRow))
-          $tmpRight[$rightRow[$rightIdx]][] = &$rightRow;
+          $tmpRight[$rightRow[$rightIdx]][] = $rightRow;
       }
       else
       {
@@ -276,12 +284,12 @@ function filteredLeftJoin(callable $filter, \ArrayAccess $left, $right, $leftIdx
   $result = $r->newInstanceWithoutConstructor();
 
   $tmpRight = [];
-  foreach ($right as &$rightRow)
+  foreach ($right as $rightRow)
   {
     if (is_array($rightRow))
     {
       if (array_key_exists($rightIdx, $rightRow))
-        $tmpRight[$rightRow[$rightIdx]][] = &$rightRow;
+        $tmpRight[$rightRow[$rightIdx]][] = $rightRow;
     }
     else
     {
